@@ -33,13 +33,22 @@ export function getNonEmptyQuestions(questions: Question[]): Question[] {
     let new_questions: Question[] = [];
     questions.map((question: Question) => {
         if (
-            question.body === "" &&
-            question.expected === "" &&
-            question.expected.length === 0
+            question.body !== "" ||
+            question.expected !== "" ||
+            question.options.length !== 0
         ) {
             new_questions = [
                 ...new_questions,
-                makeBlankQuestion(question.id, question.name, question.type),
+                {
+                    id: question.id,
+                    name: question.name,
+                    body: question.body,
+                    expected: question.expected,
+                    options: [...question.options],
+                    type: question.type,
+                    points: question.points,
+                    published: question.published,
+                },
             ];
         }
     });
@@ -95,7 +104,7 @@ export function getNames(questions: Question[]): string[] {
 export function sumPoints(questions: Question[]): number {
     const total: number = questions.reduce(
         (currentSum: number, question: Question) =>
-            currentSum + question.points,
+            (currentSum += question.points),
         0,
     );
     return total;
@@ -108,7 +117,7 @@ export function sumPublishedPoints(questions: Question[]): number {
     const total: number = questions.reduce(
         (currentSum: number, question: Question): number => {
             if (question.published) {
-                currentSum += 1;
+                currentSum += question.points;
             }
             return currentSum;
         },
@@ -147,8 +156,10 @@ export function toCSV(questions: Question[]): string {
                 current.points +
                 "," +
                 current.published;
-            if (index != questions.length) {
+            if (index !== questions.length - 1) {
                 total += "\n";
+            } else {
+                total = "id,name,options,points,published\n" + total;
             }
             return total;
         },
@@ -195,8 +206,14 @@ export function publishAll(questions: Question[]): Question[] {
  * are the same type. They can be any type, as long as they are all the SAME type.
  */
 export function sameType(questions: Question[]): boolean {
+    if (questions.length === 0) {
+        return true;
+    }
     let question_type: string = questions.reduce(
-        (total: string, question: Question): string => {
+        (total: string, question: Question, index: number): string => {
+            if (index === 0) {
+                total = question.type;
+            }
             if (total === question.type) {
                 total = question.type;
                 return total;
@@ -206,7 +223,7 @@ export function sameType(questions: Question[]): boolean {
         },
         "",
     );
-    if (question_type) {
+    if (!question_type) {
         return false;
     }
     return true;
@@ -269,7 +286,7 @@ export function changeQuestionTypeById(
         options:
             (
                 targetId === question.id &&
-                newQuestionType === "multiple_choice_question"
+                newQuestionType !== "multiple_choice_question"
             ) ?
                 []
             :   [...question.options],
@@ -296,7 +313,11 @@ function editOptionQuestionOptions(
     newOption: string,
 ): string[] {
     let new_options = [...options];
-    new_options[targetIndex] = newOption;
+    if (targetIndex === -1) {
+        new_options = [...options, newOption];
+    } else {
+        new_options[targetIndex] = newOption;
+    }
     return new_options;
 }
 
