@@ -28,28 +28,24 @@ export function TwoDice(): React.JSX.Element {
     return (
         <div>
             <span>
-                {" "}
                 <Button
                     onClick={() => {
                         setDiceOne(d6);
                     }}
                     data-testid="left-die"
                 >
-                    Roll Left
+                    Roll Left: {diceOne}
                 </Button>
-                Dice One: <span>{diceOne}</span>
             </span>
             <span>
-                {" "}
                 <Button
                     onClick={() => {
                         setDiceTwo(d6);
                     }}
                     data-testid="right-die"
                 >
-                    Roll Right
+                    Roll Right : {diceTwo}
                 </Button>
-                Dice Two: <span>{diceTwo}</span>
             </span>
             {diceOne === diceTwo && (
                 <div>
